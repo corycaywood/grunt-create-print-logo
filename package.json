@@ -1,0 +1,37 @@
+{
+  "name": "grunt-print-logo",
+  "description": "Creates a print version of a logo image.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/corycaywood/grunt-print-logo",
+  "author": {
+    "name": "Cory Caywood",
+    "email": "cory@floatinginspace.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/corycaywood/grunt-print-logo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/corycaywood/grunt-print-logo/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/corycaywood/grunt-print-logo/blob/master/LICENSE-MIT"
+    }
+  ],
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.9.2",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt": "~0.4.5"
+  },
+  "keywords": [
+    "gruntplugin"
+  ],
+  "dependencies": {
+    "jimp": "^0.2.21"
+  }
+}
