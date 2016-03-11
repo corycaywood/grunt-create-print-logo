@@ -1,6 +1,6 @@
 /*
  * grunt-create-print-logo
- * https://github.com/corycaywood/grunt-print-logo
+ * https://github.com/corycaywood/grunt-creaet-print-logo
  *
  * Copyright (c) 2016 Cory Caywood
  * Licensed under the MIT license.
