@@ -17,15 +17,17 @@ module.exports = function(grunt) {
 		// Merge task-specific and/or target-specific options with these defaults.
 		var options = this.options({
 			src: this.data.src,
-			dest: this.data.dest,
+			dest: this.data.dest,               
 			color_threshold: 0xEFEFEF,
-			transparency_threshold: 0.25,
+			pixel_transparency_threshold: 0,
+			background_transparency_threshold: 0.25,
 			fill_color: 0x000000
 		});
 		var Jimp = require("jimp"),
 			path = require("path"),
-			PIXEL_THRESHOLD = options.color_threshold,
-			TRANSPARENCY_THRESHOLD = options.transparency_threshold,
+			PIXEL_THRESHOLD = getHexTotalVal(options.color_threshold),
+			PIXEL_TRANSPARENCY_THRESHOLD = options.pixel_transparency_threshold,
+			BACKGROUND_TRANSPARENCY_THRESHOLD = options.background_transparency_threshold,
 			SRC = options.src,
 			DEST = options.dest,
 			FILL_COLOR = options.fill_color;
@@ -59,12 +61,11 @@ module.exports = function(grunt) {
 						
 						// Get Pixels in array
 						var hex = image.getPixelColor(x, y);
+						hex = "00000000" + hex.toString(16);
+						hex = hex.substring(hex.length - 8, hex.length);
 						// Strip transarency from pixel
-						if (hex > 0) {
-							hex = hex.toString(16);
-							hex = hex.substring(0, hex.length - 2);
-						}
-						pixels[x][y] = parseInt(hex, 16);						
+						hex = hex.substring(0, hex.length - 2);
+						pixels[x][y] = parseInt(hex, 16);
 						var alpha = this.bitmap.data[idx + 3];
 
 						// Count number of transparent pixels
@@ -74,19 +75,18 @@ module.exports = function(grunt) {
 						
 						// Check if loop is on the last pixel
 						if (++pixelNum == imageLength) {
-							
+							//Run Convert pixels if transparency ratio is over threshold
 							var ratioTransparency = transparentPixels / imageLength;
-													
-							if (ratioTransparency > TRANSPARENCY_THRESHOLD) {
+							if (ratioTransparency > BACKGROUND_TRANSPARENCY_THRESHOLD) {
 								
 								// Convert white pixels to black in pixel array
 								convertPixels(pixels, image, width, height, FILL_COLOR, function(newPixels){
 									// Reset image pixels to pixels from processed array
 									var scanEnd = 0;
 									image.scan(0, 0, width, height, function (x, y, idx) {
-																				
-										var color = newPixels[x][y].toString(16);
-										
+										//Get 6 digit hex
+										var color = "000000" + newPixels[x][y].toString(16);
+										color = color.substring(color.length - 6, color.length);
 										// Add back in transparency
 										var alpha = this.bitmap.data[idx + 3];
 											alpha = alpha < 16 ? "0" + alpha.toString(16) : alpha.toString(16);
@@ -115,26 +115,26 @@ module.exports = function(grunt) {
 			});
 		}
 
-		var saveImage = function(image, outputFile) {
+		function saveImage(image, outputFile) {
 			image.background(0xFFFFFFFF).write(outputFile, function(){
 				console.log("Print logo " + outputFile + " created.");
 				done();
 			});
-		};
+		}
 		
 		// Converts white pixels to black if they are touching transparency - accepts and returns array of rgba pixels (no alpha)
-		var convertPixels = function(pixels, image, width, height, fillColor, callback) {
+		function convertPixels(pixels, image, width, height, fillColor, callback) {
 			checkPixels(0, 0);
 			function checkPixels(x, y) {
 				if (x < width && y < height) {
-					var alpha = x !== 0 ? getHexAlpha(image.getPixelColor(x, y)) : 0;
-					var beforeX = x !== 0 ? getHexAlpha(image.getPixelColor(x - 1, y)) : 0;
-					var beforeY = y !== 0 ? getHexAlpha(image.getPixelColor(x, y - 1)) : 0;
-					var afterX = x < width-1 ? getHexAlpha(image.getPixelColor(x + 1, y)) : 0;
-					var afterY = y < height-1 ? getHexAlpha(image.getPixelColor(x, y + 1)) : 0;
+					var alpha = getHexAlpha(image.getPixelColor(x, y));
+					var beforeX = x !== 0 ? getHexAlpha(image.getPixelColor(x - 1, y)) : 1;
+					var beforeY = y !== 0 ? getHexAlpha(image.getPixelColor(x, y - 1)) : 1;
+					var afterX = x < width-1 ? getHexAlpha(image.getPixelColor(x + 1, y)) : 1;
+					var afterY = y < height-1 ? getHexAlpha(image.getPixelColor(x, y + 1)) : 1;
 
 					// Flood fill if the current pixel is white and surrounded by transparency on one side
-					if (alpha !== 0 && getHexTotalVal(pixels[x][y]) >= getHexTotalVal(PIXEL_THRESHOLD) && (beforeX === 0 || beforeY === 0 || afterX === 0 || afterY === 0)) {
+					if (alpha !== 0 && getHexTotalVal(pixels[x][y]) >= PIXEL_THRESHOLD && (beforeX <= PIXEL_TRANSPARENCY_THRESHOLD || beforeY <= PIXEL_TRANSPARENCY_THRESHOLD || afterX <= PIXEL_TRANSPARENCY_THRESHOLD || afterY <= PIXEL_TRANSPARENCY_THRESHOLD)) {
 						floodFill(pixels, x, y, pixels[x][y], fillColor, width, height, function(filledPixels) {
 							pixels = filledPixels;
 							nextPixel(x, y);
@@ -163,10 +163,10 @@ module.exports = function(grunt) {
 					checkPixels(width,  height);
 				}
 			}
-		};
+		}
 		
 		// Floodfill function for array
-		var floodFill = function(arrPixels, x, y, targetColor, replacementColor, width, height, callback){
+		function floodFill(arrPixels, x, y, targetColor, replacementColor, width, height, callback){
 			if(targetColor === replacementColor) {
 				return arrPixels;
 			}
@@ -203,23 +203,23 @@ module.exports = function(grunt) {
 			if (typeof callback == "function") {
 				callback(arrPixels);
 			}
-		};
+		}
 
 		// Get combined value of r + g + b
-		var getHexTotalVal = function(hex) {
+		function getHexTotalVal(hex) {
 			var r = hex.toString(16).substring(0, 2);
 			var g = hex.toString(16).substring(2, 4);
 			var b =  hex.toString(16).substring(4, 6);
 			var val = parseInt(r, 16) + parseInt(g, 16) + parseInt(b, 16);
 			return val;
-		};
+		}
 		
 		// Get alpha value from hex
-		var getHexAlpha = function(hex) {
+		function getHexAlpha(hex) {
 			hex = hex.toString(16);
 			hex = parseInt(hex.substring(hex.length - 2, hex.length), 16);
 			return hex;
-		};
+		}
 
 
 	});

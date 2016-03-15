@@ -1,6 +1,6 @@
 # grunt-create-print-logo
 
-> Creates a print version of a logo image. The task will attempt to reverse any white pixel areas that are touching transparency.
+> Creates a print version of a PNG logo image. The task will intelligently reverse any white pixel areas that are touching transparency.
 
 ## Getting Started
 This plugin requires Grunt ``
@@ -44,7 +44,7 @@ grunt.initConfig({
 			src: 'test/fixtures/logo.png',
 			dest: 'tmp/logo-print.jpg'
 			color_threshold: 0xEFEFEF,
-			transparency_threshold: 0.25,
+			background_transparency_threshold: 0.25,
 			fill_color: 0x000000
 		}
 	},

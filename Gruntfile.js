@@ -36,7 +36,7 @@ module.exports = function(grunt) {
     create_print_logo: {
 		default: {
 			options: {
-				src: 'test/fixtures/logo.png',
+				src: 'test/fixtures/headerLogo.png',
 				dest: 'tmp/logo-print.jpg'
 			}
 		}
