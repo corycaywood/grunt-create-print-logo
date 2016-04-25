@@ -1,7 +1,7 @@
 {
   "name": "grunt-create-print-logo",
   "description": "Creates a print version of a logo image.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/corycaywood/grunt-create-print-logo",
   "author": {
     "name": "Cory Caywood",
