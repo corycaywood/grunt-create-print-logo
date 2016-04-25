@@ -21,18 +21,32 @@ module.exports = function(grunt) {
 			color_threshold: 0xEFEFEF,
 			pixel_transparency_threshold: 0,
 			background_transparency_threshold: 0.25,
-			fill_color: 0x000000
+			fill_color: 0x000000,
+			log_error_only: true
 		});
 		var Jimp = require("jimp"),
 			path = require("path"),
+			fs = require('fs'),
 			PIXEL_THRESHOLD = getHexTotalVal(options.color_threshold),
 			PIXEL_TRANSPARENCY_THRESHOLD = options.pixel_transparency_threshold,
 			BACKGROUND_TRANSPARENCY_THRESHOLD = options.background_transparency_threshold,
 			SRC = options.src,
 			DEST = options.dest,
 			FILL_COLOR = options.fill_color;
-
-		createPrintLogo(SRC, DEST);
+			
+		//Check if file exists - then run
+		fs.access(SRC, fs.F_OK, function(err) {
+			if (!err) {
+				createPrintLogo(SRC, DEST);
+			} else {
+				if (!options.log_error_only) {
+					grunt.fail.warn(err);
+				}
+				grunt.log.error('Error: "' + SRC + '" File not found.');
+				done();
+			}
+		});
+		
 
 		function createPrintLogo(imageFile, outputFile) {
 			Jimp.read(imageFile, function (err, image) {

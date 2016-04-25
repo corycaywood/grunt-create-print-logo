@@ -45,7 +45,8 @@ grunt.initConfig({
 			dest: 'tmp/logo-print.jpg'
 			color_threshold: 0xEFEFEF,
 			background_transparency_threshold: 0.25,
-			fill_color: 0x000000
+			fill_color: 0x000000,
+			log_error_only: true
 		}
 	},
 });
